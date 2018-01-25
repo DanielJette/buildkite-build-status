@@ -8,6 +8,7 @@ class StatusController < ApplicationController
 	def show
 
 		id = request.query_parameters['id']
+		platform = request.query_parameters['platform']  || 'android'
 		url = 'https://badge.buildkite.com/' + id + '.json'
 		uri = URI(url)
 
@@ -18,9 +19,19 @@ class StatusController < ApplicationController
 
 		json = JSON.parse(response.body)
 
+		result = json['status']
+
+		tint = if result == 'passing'
+			'green'
+		else
+			'red'
+		end
+
+		image = platform + "-" + tint + ".png"
+
 		respond_to do |format|
 			format.json {
-				render :json => json 
+				render :json => image 
 			}
 		end
 	end
