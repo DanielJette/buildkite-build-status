@@ -55,5 +55,5 @@ get '/badge' do
 	id = params[:id]
 	branch = params[:branch] || 'master'
 
-	"#{BUILDKITE_URL}#{id}.json?branch=#{branch}"
+	"#{BUILDKITE_URL}#{id}.svg?branch=#{branch}"
 end
