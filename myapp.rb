@@ -2,6 +2,11 @@ require 'sinatra'
 require 'net/http'
 require 'json'
 
+after do
+	response['Access-Control-Allow-Origin'] = '*'
+	response['Access-Control-Request-Method'] = %w{GET POST OPTIONS}.join(",")
+end
+
 BUILDKITE_URL = "https://badge.buildkite.com/"
 
 private def fetch_status(id, branch)
