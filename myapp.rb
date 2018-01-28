@@ -9,8 +9,8 @@ end
 
 BUILDKITE_URL = "https://badge.buildkite.com/"
 
-private def fetch_status(id, branch)
-	uri = URI("#{BUILDKITE_URL}#{id}.json?branch=#{branch}")
+private def fetch_status(id, branch, step = nil)
+	uri = URI("#{BUILDKITE_URL}#{id}.json?branch=#{branch}#{step}")
 
 	http = Net::HTTP.new(uri.host, uri.port)
 	http.use_ssl = true
@@ -25,13 +25,19 @@ private def fetch_status(id, branch)
 	end
 end
 
+private def get_step()
+	if (params.has_key?(:step))
+		"&step=#{params[:step].gsub(' ','%20')}"
+	end
+end
+
 get '/status' do
 	if(!params.has_key?(:id))
 		halt 500, "500: BuildKite ID required"
 	end
 
 	branch = params[:branch] || 'master'
-	fetch_status(params[:id], branch)
+	fetch_status(params[:id], branch, get_step())
 end
 
 get '/image' do
@@ -42,8 +48,7 @@ get '/image' do
 	id = params[:id]
 	platform = params[:platform]  || 'android'
 	branch = params[:branch] || 'master'
-
-	"#{platform}-#{fetch_status(id, branch)}.png"
+	"#{platform}-#{fetch_status(id, branch, get_step())}.png"
 end
 
 
@@ -54,6 +59,5 @@ get '/badge' do
 
 	id = params[:id]
 	branch = params[:branch] || 'master'
-
-	"#{BUILDKITE_URL}#{id}.svg?branch=#{branch}"
+	"#{BUILDKITE_URL}#{id}.svg?branch=#{branch}#{get_step()}"
 end
