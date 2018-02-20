@@ -31,6 +31,21 @@ private def get_step()
 	end
 end
 
+get '/full' do
+	if(!params.has_key?(:id))
+		halt 500, "500: BuildKite ID required"
+	end
+
+	branch = params[:branch] || 'master'
+	step = get_step()
+	status = fetch_status(params[:id], branch, step)
+	badge  = "#{BUILDKITE_URL}#{params[:id]}.svg?branch=#{branch}#{step}"
+
+	"{ status: \"#{status}\", badge: \"#{badge}\" }"
+end
+
+
+
 get '/status' do
 	if(!params.has_key?(:id))
 		halt 500, "500: BuildKite ID required"
@@ -39,18 +54,6 @@ get '/status' do
 	branch = params[:branch] || 'master'
 	fetch_status(params[:id], branch, get_step())
 end
-
-get '/image' do
-	if(!params.has_key?(:id))
-		halt 500, "500: BuildKite ID required"
-	end
-
-	id = params[:id]
-	platform = params[:platform]  || 'android'
-	branch = params[:branch] || 'master'
-	"#{platform}-#{fetch_status(id, branch, get_step())}.png"
-end
-
 
 get '/badge' do
 	if(!params.has_key?(:id))
