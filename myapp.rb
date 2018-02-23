@@ -31,19 +31,50 @@ private def get_step()
 	end
 end
 
+private def get_full(id, branch)
+	step = get_step()
+	status = fetch_status(id, branch, step)
+	badge  = "#{BUILDKITE_URL}#{id}.svg?branch=#{branch}#{step}"
+
+"	{
+		\"pipeline\": { 
+			\"id\": \"#{id}\", 
+			\"status\": \"#{status}\", 
+			\"badge\": \"#{badge}\" 
+		}
+	}"
+end
+
 get '/full' do
 	if(!params.has_key?(:id))
 		halt 500, "500: BuildKite ID required"
 	end
 
-	branch = params[:branch] || 'master'
-	step = get_step()
-	status = fetch_status(params[:id], branch, step)
-	badge  = "#{BUILDKITE_URL}#{params[:id]}.svg?branch=#{branch}#{step}"
-
-	"{ status: \"#{status}\", badge: \"#{badge}\" }"
+	id = params[:id]
+	get_full(id, params[:branch] || 'master')
 end
 
+post '/bulk' do
+
+	response = "{\n\t\"data\": [\n"
+	tail = ""
+
+	if request.body.size > 0
+		request.body.rewind
+		json_obj = JSON.parse(request.body.read)
+		JSON.recurse_proc(json_obj) do |obj|
+			if obj.is_a?(Hash) && obj['id']
+				response += tail
+				response += get_full(obj['id'], obj['branch'] || 'master')
+				tail = ",\n"
+			end
+		end
+	end
+
+	response += " \n\t]\n}"
+	response
+
+end
 
 
 get '/status' do
