@@ -20,6 +20,8 @@ private def fetch_status(id, branch, step = nil)
 
 	if json['status'] == 'passing'
 		'green'
+	elsif json['status'] == 'unknown'
+		'unknown'
 	else
 		'red'
 	end
